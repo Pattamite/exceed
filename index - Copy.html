@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="/stylesheets/bootstrap-theme.min.css">
+
+  <link rel="stylesheet" type="text/css" href="index.css">
+
+  <script src="amcharts/amcharts.js" type="text/javascript"></script>
+  <script src="amcharts/serial.js" type="text/javascript"></script>
+  <script src="amcharts/amstock.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="amcharts/style.css" type="text/css">
+  <script type="text/javascript">
+    var chartData1 = [];
+    var chartData2 = [];
+    var chartData3 = [];
+    var chartData4 = [];
+    var chartData5 = [];
+
+    var limitGrowth = 4500;
+    var seasonDay = [40, 25, 35]; //0>summer 1>rain 2>winter
+
+    var seasonData = [
+      [60, 0, 0, 0, 0, 242 * 24],
+      [150, 0, 0, 0, 0, 154 * 24],
+      [100, 0, 0, 0, 0, 120 * 24]
+    ]; //0>summer 1>rain 2>winter
+    var nowGrowth = 0;
+    var seasonNum;
+
+    var chart2value = [{
+      "color": "#00c853",
+      "season": "Summer",
+      "value": seasonData[0][0]
+    }, {
+      "color": "#00e676",
+      "season": "Rain",
+      "value": seasonData[1][0]
+    }, {
+      "color": "#69f0ae",
+      "season": "Winter",
+      "value": seasonData[2][0]
+    }, {
+      "color": "#006064",
+      "season": " Summer ",
+      "value": seasonData[0][1]
+    }, {
+      "color": "#00838f",
+      "season": " Rain ",
+      "value": seasonData[1][1]
+    }, {
+      "color": "#0097a7",
+      "season": " Winter ",
+      "value": seasonData[2][1]
+    }, {
+      "color": "#ffd600",
+      "season": "  Summer  ",
+      "value": seasonData[0][2]
+    }, {
+      "color": "#ffea00",
+      "season": "  Rain  ",
+      "value": seasonData[1][2]
+    }, {
+      "color": "#ffff00",
+      "season": "  Winter  ",
+      "value": seasonData[2][2]
+    }, {
+      "color": "#f4511e",
+      "season": "   Summer   ",
+      "value": seasonData[0][3]
+    }, {
+      "color": "#ff5722",
+      "season": "   Rain   ",
+      "value": seasonData[1][3]
+    }, {
+      "color": "#ff7043",
+      "season": "   Winter   ",
+      "value": seasonData[2][3]
+    }, {
+      "color": "#29b6f6",
+      "season": "    Summer    ",
+      "value": seasonData[0][4]
+    }, {
+      "color": "#03a9f4",
+      "season": "    Rain    ",
+      "value": seasonData[1][4]
+    }, {
+      "color": "#039be5",
+      "season": "    Winter    ",
+      "value": seasonData[2][4]
+    }]
+
+
+    function generateChartData() {
+      var firstDate = new Date();
+
+      if (firstDate.getMonth() <= 1) seasonNum = 2;
+      else if (firstDate.getMonth() <= 5) seasonNum = 0;
+      else if (firstDate.getMonth() <= 9) seasonNum = 1;
+      else seasonNum = 2;
+      console.log(firstDate);
+      var a1 = (Math.random() + 0.5) * (limitGrowth / seasonDay[seasonNum] * 1); //growth
+      var a2 = Math.round(Math.random() * (100)) + 200; //humidity
+      var a3 = Math.round(Math.random() * (100)) + 200; //UV
+      var a4 = Math.round(Math.random() * (100)) + 200; //Temperature
+      var a5 = Math.round(Math.random() * (100)) + 200; //Water
+      nowGrowth = nowGrowth + a1;
+      //console.log(a1, a2, a3, a4, nowGrowth);
+
+      chartData1.push({
+        date: firstDate,
+        value: a1,
+      });
+      chartData2.push({
+        date: firstDate,
+        value: a2,
+      });
+      chartData3.push({
+        date: firstDate,
+        value: a3,
+      });
+      chartData4.push({
+        date: firstDate,
+        value: a4,
+      });
+      chartData5.push({
+        date: firstDate,
+        value: a5,
+      });
+
+      seasonData[seasonNum][0] = ((seasonData[seasonNum][0] * seasonData[seasonNum][5]) + a1) / (seasonData[seasonNum][5] + 1);
+      seasonData[seasonNum][1] = ((seasonData[seasonNum][1] * seasonData[seasonNum][5]) + a2) / (seasonData[seasonNum][5] + 1);
+      seasonData[seasonNum][2] = ((seasonData[seasonNum][2] * seasonData[seasonNum][5]) + a3) / (seasonData[seasonNum][5] + 1);
+      seasonData[seasonNum][3] = ((seasonData[seasonNum][3] * seasonData[seasonNum][5]) + a4) / (seasonData[seasonNum][5] + 1);
+      seasonData[seasonNum][4] = ((seasonData[seasonNum][4] * seasonData[seasonNum][5]) + a4) / (seasonData[seasonNum][5] + 1);
+      seasonData[seasonNum][5] += 1;
+      if (nowGrowth >= limitGrowth) nowGrowth = 0;
+    }
+
+
+    AmCharts.ready(function() {
+      generateChartData();
+      createStockChart();
+    });
+
+    function createStockChart() {
+      var chart = AmCharts.makeChart("chartdiv", {
+        "type": "stock",
+        "theme": "light",
+
+        "dataSets": [{
+          "title": "Growth",
+          "fieldMappings": [{
+            "fromField": "value",
+            "toField": "value"
+          }],
+          "dataProvider": chartData1,
+          "categoryField": "date",
+          "color": "#00e676"
+        }, {
+          "title": "Humidity",
+          "fieldMappings": [{
+            "fromField": "value",
+            "toField": "value"
+          }],
+          "dataProvider": chartData2,
+          "categoryField": "date",
+          "color": "#00838f"
+        }, {
+          "title": "UV",
+          "fieldMappings": [{
+            "fromField": "value",
+            "toField": "value"
+          }],
+          "dataProvider": chartData3,
+          "categoryField": "date",
+          "color": "#ffea00"
+        }, {
+          "title": "Temperature",
+          "fieldMappings": [{
+            "fromField": "value",
+            "toField": "value"
+          }],
+          "dataProvider": chartData4,
+          "categoryField": "date",
+          "color": "#ff5722"
+        }, {
+          "title": "Water",
+          "fieldMappings": [{
+            "fromField": "value",
+            "toField": "value"
+          }],
+          "dataProvider": chartData5,
+          "categoryField": "date",
+          "color": "#03a9f4"
+        }],
+
+        "panels": [{
+          "title": "Value",
+          "stockGraphs": [{
+            "id": "g1",
+            "valueField": "value",
+            "comparable": true,
+            "compareField": "value",
+            "balloonText": "[[title]]:<b>[[value]]</b>",
+            "compareGraphBalloonText": "[[title]]:<b>[[value]]</b>"
+          }],
+          "stockLegend": {
+            "periodValueTextComparing": "[[percents.value.close]]%",
+            "periodValueTextRegular": "[[value.close]]"
+          }
+        }],
+
+        "chartScrollbarSettings": {
+          "graph": "g1"
+        },
+
+        "chartCursorSettings": {
+          "valueBalloonsEnabled": true,
+          "fullWidth": true,
+          "cursorAlpha": 0.1,
+          "valueLineBalloonEnabled": true,
+          "valueLineEnabled": true,
+          "valueLineAlpha": 0.5
+        },
+
+        "categoryAxis": {
+          "minPeriod": "mm",
+        },
+
+        "categoryAxesSettings": {
+          "minPeriod": "mm",
+        },
+
+        "periodSelector": {
+          "position": "left",
+          "periods": [{
+            "period": "DD",
+            "selected": true,
+            "count": 1,
+            "label": "1 day"
+          }, {
+            "period": "WW",
+            "selected": true,
+            "count": 1,
+            "label": "1 week"
+          }, {
+            "period": "MM",
+            "selected": true,
+            "count": 1,
+            "label": "1 month"
+          }, {
+            "period": "YYYY",
+            "count": 1,
+            "label": "1 year"
+          }, {
+            "period": "YTD",
+            "label": "YTD"
+          }, {
+            "period": "MAX",
+            "label": "MAX"
+          }]
+        },
+
+        "dataSetSelector": {
+          "position": "left"
+        },
+
+        "export": {
+          "enabled": true
+        }
+      });
+
+      var chart2 = AmCharts.makeChart("chartdiv2", {
+        "type": "serial",
+        "theme": "light",
+        "dataProvider": chart2value,
+        "valueAxes": [{
+          "gridColor": "#FFFFFF",
+          "gridAlpha": 0.2,
+          "axisAlpha": 1
+        }],
+        "gridAboveGraphs": true,
+        "startDuration": 1,
+        "graphs": [{
+          "balloonText": "[[category]]: <b>[[value]]</b>",
+          "fillAlphas": 0.8,
+          "lineAlpha": 0.2,
+          "type": "column",
+          "valueField": "value",
+          "fillColorsField": "color",
+          "lineColorField": "color"
+        }],
+        "chartCursor": {
+          "categoryBalloonEnabled": false,
+          "cursorAlpha": 0,
+          "zoomable": false
+        },
+        "categoryField": "season",
+        "categoryAxis": {
+          "gridPosition": "start",
+          "gridAlpha": 0,
+          "tickPosition": "start",
+          "tickLength": 20,
+          "axisAlpha": 1,
+          "guides": [{
+            "category": "Summer",
+            "toCategory": "Winter",
+            "label": "Growth",
+            "lineAlpha": 0.2,
+            "tickLength": 20,
+            "boldLabel": true,
+            "expand": true
+          }, {
+            "category": "Summer",
+            "toCategory": "Winter",
+            "tickLength": 40,
+            "expand": true
+          }, {
+            "category": " Summer ",
+            "toCategory": " Winter ",
+            "label": "Humidity",
+            "lineAlpha": 0.2,
+            "tickLength": 20,
+            "boldLabel": true,
+            "expand": true
+          }, {
+            "category": " Summer ",
+            "toCategory": " Winter ",
+            "tickLength": 40,
+            "expand": true
+          }, {
+            "category": "  Summer  ",
+            "toCategory": "  Winter  ",
+            "label": "UV",
+            "lineAlpha": 0.2,
+            "tickLength": 20,
+            "boldLabel": true,
+            "expand": true
+          }, {
+            "category": "  Summer  ",
+            "toCategory": "  Winter  ",
+            "tickLength": 40,
+            "expand": true
+          }, {
+            "category": "   Summer   ",
+            "toCategory": "   Winter   ",
+            "label": "Temperature",
+            "lineAlpha": 0.2,
+            "tickLength": 20,
+            "boldLabel": true,
+            "expand": true
+          }, {
+            "category": "   Summer   ",
+            "toCategory": "   Winter   ",
+            "tickLength": 40,
+            "expand": true
+          }, {
+            "category": "    Summer    ",
+            "toCategory": "    Winter    ",
+            "label": "Water",
+            "lineAlpha": 0.2,
+            "tickLength": 20,
+            "boldLabel": true,
+            "expand": true
+          }, {
+            "category": "    Summer    ",
+            "toCategory": "    Winter    ",
+            "tickLength": 40,
+            "expand": true
+          }]
+        }
+
+      });
+
+      // set up the chart to update every second
+      setInterval(function() {
+
+        // remove datapoint from the beginning
+        // chartData1.shift();
+        // chartData2.shift();
+        // chartData3.shift();
+        // chartData4.shift();
+
+        // add new datapoint at the end
+        var newDate = new Date(chartData1[chartData1.length - 1].date);
+        newDate.setHours(newDate.getHours() + 1);
+
+        var a1,a2,a3,a4,a5;
+
+        $.ajax({
+            url: 'http://10.32.176.4/eXodia'
+          })
+          .done(
+            function(rawdata) {
+              var data = rawdata.split("_");
+              var dataID = data[0];
+              //console.log(dataID);
+
+              if (dataID === "00") {
+                //console.log("pass");
+                var tall = parseFloat(data[1]);
+                var humid = parseFloat(data[2]);
+                var uv = parseFloat(data[3]);
+                var temp = parseFloat(data[4]);
+                var water = parseFloat(data[5]);
+                var growth = tall - oldtall;
+                oldtall = tall;
+
+                //logList.html("LOG : " + rawdata + '\n' + oldLog );
+                a1 = growth;
+                a2 = humid;
+                a3 = uv;
+                a4 = temp;
+                a5 = growth;
+                );
+              }
+
+            }
+
+        if(a1 !== -9999){
+          chart.dataSets[0].dataProvider.push({
+          date: newDate,
+          value: a1,
+        })};
+        chart.dataSets[1].dataProvider.push({
+          date: newDate,
+          value: a2,
+        });
+        chart.dataSets[2].dataProvider.push({
+          date: newDate,
+          value: a3,
+        });
+        chart.dataSets[3].dataProvider.push({
+          date: newDate,
+          value: a4,
+        });
+        chart.dataSets[4].dataProvider.push({
+          date: newDate,
+          value: a5,
+        });
+
+        if (newDate.getMonth() <= 1) seasonNum = 2;
+        else if (newDate.getMonth() <= 5) seasonNum = 0;
+        else if (newDate.getMonth() <= 9) seasonNum = 1;
+        else seasonNum = 2;
+        if(a1 !== -9999) seasonData[seasonNum][0] = ((seasonData[seasonNum][0] * (seasonData[seasonNum][5]/24)) + a1) / ((seasonData[seasonNum][5]/24) + 1);
+        seasonData[seasonNum][1] = ((seasonData[seasonNum][1] * seasonData[seasonNum][5]) + a2) / (seasonDat/a[seasonNum][5] + 1);
+        seasonData[seasonNum][2] = ((seasonData[seasonNum][2] * seasonData[seasonNum][5]) + a3) / (seasonData[seasonNum][5] + 1);
+        seasonData[seasonNum][3] = ((seasonData[seasonNum][3] * seasonData[seasonNum][5]) + a4) / (seasonData[seasonNum][5] + 1);
+        seasonData[seasonNum][4] = ((seasonData[seasonNum][4] * seasonData[seasonNum][5]) + a4) / (seasonData[seasonNum][5] + 1);
+        seasonData[seasonNum][5] += 1;
+        if (nowGrowth >= limitGrowth) nowGrowth = 0;
+
+        //console.log(seasonData[seasonNum] , newDate.getMonth(), seasonNum);
+        chart2value[0].value = seasonData[0][0];
+        chart2value[1].value = seasonData[1][0];
+        chart2value[2].value = seasonData[2][0];
+        chart2value[3].value = seasonData[0][1];
+        chart2value[4].value = seasonData[1][1];
+        chart2value[5].value = seasonData[2][1];
+        chart2value[6].value = seasonData[0][2];
+        chart2value[7].value = seasonData[1][2];
+        chart2value[8].value = seasonData[2][2];
+        chart2value[9].value = seasonData[0][3];
+        chart2value[10].value = seasonData[1][3];
+        chart2value[11].value = seasonData[2][3];
+        chart2value[12].value = seasonData[0][4];
+        chart2value[13].value = seasonData[1][4];
+        chart2value[14].value = seasonData[2][4];
+        chart.validateData();
+        chart2.validateData();
+
+        // adjust zoom
+
+        var newStartHours = new Date(chart.startDate.getTime());
+        newStartHours.setHours(newStartHours.getHours());
+        var newEndHours = new Date(chart.endDate.getTime());
+        newEndHours.setHours(newEndHours.getHours() + 1);
+        chart.zoom(newStartHours, newEndHours);
+      }, 5000);
+    }
+  </script>
+
+</head>
+
+<body>
+
+  <div id="chartdiv" style="width:50%; height:400px;" class="graphCenter"></div>
+  <br />
+  <div id="chartdiv2" style="width:50%; height:400px;" class="graphCenter"></div>
+  <br />
+  <div id="container" class="col-xs-6 col-xs-offset-3 col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Chatroom</h3>
+      </div>
+      <div class="panel-body">
+        <textarea disabled class="form-control" id="log-list"></textarea>
+        <br />
+        <textarea disabled class="form-control" id="data-list"></textarea>
+        <br />
+        <div>
+          <div class="input-group">
+            <input class="form-control" id="message" placeholder="Message" />
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-success" id="btn-send">Send</button>
+            </span>
+          </div>
+          <br />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type='text/javascript'>
+    var logList = $('#log-list');
+    var dataList = $('#data-list');
+    var sendButton = $('#btn-send')
+    var MessageInput = $('#message');
+    var oldtall = 0;
+    //var rawdata = '0-X';
+    function sendInput(stringData) {
+      $.ajax({
+          url: 'http://10.32.176.4/eXodia/' + stringData + '/set'
+        })
+        .done(alert("OK"));
+      //rawdata = logID + '-' + stringData;
+    }
+    sendButton.click(function() {
+      sendInput(MessageInput.val());
+    })
+
+    setInterval
+      (
+        function() {
+          $.ajax({
+              url: 'http://10.32.176.4/eXodia'
+            })
+            .done(
+              function(rawdata) {
+                var oldLog = logList.val();
+                //logList.html("RealLOG : " + rawdata + '\n' + oldLog);
+                var data = rawdata.split("_");
+                var dataID = data[0];
+                console.log(dataID);
+
+                if (dataID === "00") {
+                  console.log("pass");
+                  var tall = parseFloat(data[1]);
+                  var humid = parseFloat(data[2]);
+                  var uv = parseFloat(data[3]);
+                  var temp = parseFloat(data[4]);
+                  var water = parseFloat(data[5]);
+                  var growth = tall - oldtall;
+                  oldtall = tall;
+
+                  //logList.html("LOG : " + rawdata + '\n' + oldLog );
+                  logList.html(rawdata + "\n" + oldLog);
+                  dataList.html(
+                    "GROWTH : " + growth + "\n" +
+                    "HUMID : " + humid + "\n" +
+                    "UV : " + uv + "\n" +
+                    "TEMP : " + temp + "\n" +
+                    "WATER : " + water
+                  );
+                }
+
+              }
+            )
+        }, 1000);
+  </script>
+
+</body>
+
+</html>
