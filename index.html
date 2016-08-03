@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="/stylesheets/bootstrap-theme.min.css">
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+  <div id="container" class="col-xs-6 col-xs-offset-3 col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Chatroom</h3>
+      </div>
+      <div class="panel-body">
+        <textarea disabled class="form-control" id="log-list"></textarea>
+        <br />
+        <textarea disabled class="form-control" id="data-list"></textarea>
+        <br />
+        <div>
+          <div class="input-group">
+            <input class="form-control" id="message" placeholder="Message" />
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-success" id="btn-send">Send</button>
+            </span>
+          </div>
+          <br />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="width: 75%; margin: 10px auto;">
+
+    <div class="row">
+      <br />
+      <div class="col-xs-12">
+        <div class="progress">
+          <div id="station-one" class="one danger-color">
+            <h4 class="station-text">first</h4></div>
+          <div id="station-two" class="two danger-color">
+            <h4 class="station-text">second</h4></div>
+          <div id="station-three" class="three danger-color">
+            <h4 class="station-text">third</h4></div>
+          <div id="station-four" class="four danger-color">
+            <h4 class="station-text">fourth</h4></div>
+          <div id="station-five" class="five danger-color">
+            <h4 class="station-text">fifth</h4></div>
+          <div id="progress-one" class="progress-bar progress-bar-success" style="width: 0%;"></div>
+          <div id="progress-two" class="progress-bar progress-bar-danger" style="width: 100%">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <script type='text/javascript'>
+      var logList = $('#log-list');
+      var dataList = $('#data-list');
+      var sendButton = $('#btn-send')
+      var MessageInput = $('#message');
+      var logID = 1;
+      var prelogID = -1;
+      var peopleIN = 0;
+      var peopleOUT = 0;
+      var totalSeat = 30;
+      //var rawdata = '0-X';
+
+      function sendInput(stringData) {
+        $.ajax({
+            url: 'http://10.32.176.4/eXodia/' + logID.toString() + '-' + stringData
+          })
+          .success(alert("OK"));
+        //rawdata = logID + '-' + stringData;
+        logID = logID + 1;
+      }
+
+      sendButton.click(function() {
+        sendInput(MessageInput.val());
+      })
+
+      setInterval
+        (
+          function() {
+            $.ajax({
+                url: 'http://10.32.176.4/eXodia'
+              })
+              .success(
+                function(rawdata) {
+                  var oldLog = logList.val();
+                  logList.html("RealLOG : " + rawdata + '\n' + oldLog);
+                  var data = rawdata.split("-");
+                  var dataID = parseInt(data[0]);
+                  var dataValue = data[1];
+
+                  if (dataID !== prelogID) {
+                    var date = new Date();
+                    var now = date.toUTCString();
+                    prelogID = dataID;
+
+                    //logList.html("LOG : " + rawdata + '\n' + oldLog );
+
+                    if (dataValue === "IN") {
+                      peopleIN = peopleIN + 1;
+                      logList.html("Passenger IN (" + now + ")\n" + oldLog);
+                    } else if (dataValue === "OUT") {
+                      peopleOUT = peopleOUT + 1;
+                      logList.html("Passenger OUT (" + now + ")\n" + oldLog);
+                    }
+
+                    dataList.html(
+                      "IN : " + peopleIN + "\n" +
+                      "OUT : " + peopleOUT + "\n" +
+                      "EMPTY SEATS : " + (totalSeat - peopleIN + peopleOUT) + "\n"
+                    );
+                  }
+                }
+              )
+          }, 1000);
+
+      var station = [];
+      station[0] = document.getElementById("station-one");
+      station[1] = document.getElementById("station-two");
+      station[2] = document.getElementById("station-three");
+      station[3] = document.getElementById("station-four");
+      station[4] = document.getElementById("station-five");
+
+      var progress = [];
+      progress[0] = document.getElementById("progress-one");
+      progress[1] = document.getElementById("progress-two");
+
+
+      var runTime = 10;
+      var waitTime = 5;
+      var runTime = 0;
+      setInterval(function() {
+        if (runTime === 0) {
+          station[0].className = "one primary-color";
+        }
+        if (runTime >= 5 && runTime <= 15) {
+          station[0].className = "one success-color";
+          progress[0].style.width = (runTime - 5) * 2.5 + "%";
+          progress[1].style.width = (100 - ((runTime - 5) * 2.5)) + "%";
+        }
+        if (runTime === 15) {
+          station[1].className = "two primary-color";
+        }
+        if (runTime >= 20 && runTime <= 30) {
+          station[1].className = "two success-color";
+          progress[0].style.width = (runTime - 10) * 2.5 + "%";
+          progress[1].style.width = (100 - ((runTime - 10) * 2.5)) + "%";
+        }
+        if (runTime === 30) {
+          station[2].className = "three primary-color";
+        }
+        if (runTime >= 35 && runTime <= 45) {
+          station[2].className = "three success-color";
+          progress[0].style.width = (runTime - 15) * 2.5 + "%";
+          progress[1].style.width = (100 - ((runTime - 15) * 2.5)) + "%";
+        }
+        if (runTime === 45) {
+          station[3].className = "four primary-color";
+        }
+        if (runTime >= 50 && runTime <= 60) {
+          station[3].className = "four success-color";
+          progress[0].style.width = (runTime - 20) * 2.5 + "%";
+          progress[1].style.width = (100 - ((runTime - 20) * 2.5)) + "%";
+        }
+        if (runTime === 60) {
+          station[4].className = "five primary-color";
+        }
+        if (runTime === 65) {
+          station[4].className = "five success-color";
+          station[0].className = "one danger-color";
+          station[1].className = "two danger-color";
+          station[2].className = "three danger-color";
+          station[3].className = "four danger-color";
+          progress[0].className = "progress-bar progress-bar-danger";
+          progress[1].className = "progress-bar progress-bar-success";
+
+        }
+        if (runTime >= 65 && runTime <= 75) {
+          station[4].className = "five success-color";
+          progress[1].style.width = (runTime - 65) * 2.5 + "%";
+          progress[0].style.width = (100 - ((runTime - 65) * 2.5)) + "%";
+        }
+        if (runTime === 75) {
+          station[3].className = "four primary-color";
+        }
+        if (runTime >= 80 && runTime <= 90) {
+          station[3].className = "four success-color";
+          progress[1].style.width = (runTime - 70) * 2.5 + "%";
+          progress[0].style.width = (100 - ((runTime - 70) * 2.5)) + "%";
+        }
+        if (runTime === 90) {
+          station[2].className = "three primary-color";
+        }
+        if (runTime >= 95 && runTime <= 105) {
+          station[2].className = "three success-color";
+          progress[1].style.width = (runTime - 75) * 2.5 + "%";
+          progress[0].style.width = (100 - ((runTime - 75) * 2.5)) + "%";
+        }
+        if (runTime === 105) {
+          station[1].className = "two primary-color";
+        }
+        if (runTime >= 110 && runTime <= 120) {
+          station[1].className = "two success-color";
+          progress[1].style.width = (runTime - 80) * 2.5 + "%";
+          progress[0].style.width = (100 - ((runTime - 80) * 2.5)) + "%";
+        }
+        if (runTime === 120) {
+          station[0].className = "one primary-color";
+        }
+        if (runTime === 125) {
+          station[0].className = "one success-color";
+          station[1].className = "two danger-color";
+          station[2].className = "three danger-color";
+          station[3].className = "four danger-color";
+          station[4].className = "fivw danger-color";
+          progress[0].className = "progress-bar progress-bar-success";
+          progress[1].className = "progress-bar progress-bar-danger";
+
+          runTime = -1;
+        }
+        runTime = runTime + 1
+      }, 1000)
+    </script>
+</body>
+
+</html>
